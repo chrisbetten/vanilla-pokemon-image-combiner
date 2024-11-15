@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pokémon & Image Combiner</title>
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        margin-top: 10px;
+        padding: 0;
+        overflow: hidden; /* Prevent vertical scrolling */
+      }
+
+      body {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #fefcee;
+        font-family: "Press Start 2P", cursive;
+        color: #353c40;
+        padding: 20px;
+      }
+      h1 {
+        text-align: center;
+        width: 100%;
+        color: #a64ac9;
+        margin-bottom: 20px;
+        font-family: "Press Start 2P", cursive;
+      }
+      .main-title {
+        text-decoration: underline;
+        text-decoration-style: wavy;
+        text-decoration-thickness: 3px;
+        text-decoration-color: #ffb48f;
+      }
+      h2 {
+        color: #a64ac9;
+        margin: 10px 0;
+      }
+      button {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        border: none;
+        border-radius: 5px;
+        background-color: #17e9e0;
+        color: #0a605c;
+        margin: 10px 0;
+        transition: background-color 0.3s;
+        font-family: "Roboto Mono", monospace;
+        font-weight: 700;
+      }
+      button:hover {
+        background-color: #18918b;
+        color: white;
+      }
+      .main-content {
+        max-width: 90vw;
+        height: 100vh;
+        overflow: hidden;
+        margin: 0 auto;
+        padding: 20px;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+      }
+      .generator-container {
+        display: flex;
+        flex-direction: row;
+        align-self: center;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 20px;
+        margin: auto 0;
+      }
+      .left-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: top;
+        gap: 40px;
+        width: 50%;
+        height: 100%;
+        padding: 20px;
+        background-color: #f5e6cc;
+        border-radius: 10px;
+      }
+      .right-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: top;
+        align-items: center;
+        width: 50%;
+        padding: 20px;
+      }
+      .card {
+        background-color: white;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        width: 250px;
+        height: fit-content;
+        min-height: 400px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      img {
+        width: 150px;
+        height: 150px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        align-self: center;
+        transition: width 0.3s, height 0.3s; /* Smooth transition for resizing */
+      }
+      .instruction {
+        font-size: 14px;
+        color: #888;
+      }
+      .placeholder {
+        width: 150px;
+        height: 150px;
+        background-color: #e0e0e0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #aaa;
+        font-size: 14px;
+        border-radius: 5px;
+        margin: 0 auto;
+      }
+      #canvas {
+        border: 2px solid #3f51b5;
+        margin-left: 20px;
+        background-color: #f0f0f0;
+        border-radius: 10px;
+      }
+
+      @media (max-width: 600px) {
+        html,
+        body {
+          overflow-y: auto; /* Allow vertical scrolling */
+          height: auto;
+        }
+
+        body {
+          flex-direction: column;
+          height: auto;
+        }
+
+        .main-content {
+          max-width: 90vw;
+          height: auto;
+          overflow-y: auto;
+          margin: 0 auto;
+          padding: 10px;
+          border-radius: 10px;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .main-title {
+          text-decoration: none;
+          text-decoration-style: initial;
+          text-decoration-thickness: initial;
+          text-decoration-color: initial;
+        }
+
+        .generator-container {
+          flex-direction: column;
+          height: auto;
+          overflow-y: auto;
+          align-self: center;
+        }
+
+        .left-container {
+          flex-direction: column;
+          width: 90%;
+          padding: 10px;
+          align-self: center;
+        }
+
+        .right-container {
+          width: 100%;
+          padding: 10px;
+        }
+
+        .card {
+          width: 80vw;
+          margin: 10px 0;
+          height: fit-content;
+          align-self: center;
+        }
+      }
+    </style>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto+Mono&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="main-content">
+      <h1 class="main-title">You Must Capture All of Them</h1>
+      <div class="generator-container">
+        <div class="left-container">
+          <div class="card">
+            <h2>Get a Random Pokémon!</h2>
+            <button onclick="fetchRandomPokemon()">Get Pokémon</button>
+            <div class="placeholder" id="pokemonPlaceholder">
+              Loading Pokémon...
+            </div>
+            <img
+              id="pokemonImage"
+              src=""
+              alt="Pokémon Image"
+              style="display: none"
+              crossorigin="anonymous"
+              ondblclick="resizePokemonImage()"
+            />
+            <div>
+              <h3 class="pokemon-name" id="pokemonName"></h3>
+              <p id="pokemonType"></p>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>Get a Random Image!</h2>
+            <button onclick="fetchRandomImage()">Get Image</button>
+            <div class="placeholder" id="imagePlaceholder">
+              Loading Image...
+            </div>
+            <img
+              id="randomImage"
+              src=""
+              alt="Random Image"
+              style="display: none"
+              crossorigin="anonymous"
+            />
+          </div>
+        </div>
+
+        <div class="right-container">
+          <h2>Combined Image</h2>
+          <canvas id="canvas" width="300" height="300"></canvas>
+          <button onclick="downloadCanvasImage()">Download Image</button>
+          <p class="instruction">Click and drag to reposition Pokémon</p>
+          <p class="instruction">Double-click Pokémon to toggle size</p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let sizeState = 0;
+
+      function resizePokemonImage() {
+        const img = document.getElementById("pokemonImage");
+        if (sizeState === 0) {
+          img.style.width = "150px";
+          img.style.height = "150px";
+        } else if (sizeState === 1) {
+          img.style.width = "300px";
+          img.style.height = "300px";
+        } else {
+          img.style.width = "450px";
+          img.style.height = "450px";
+        }
+        sizeState = (sizeState + 1) % 3;
+      }
+
+      async function fetchRandomPokemon() {
+        const randomId = Math.floor(Math.random() * 898) + 1; // Pokémon ID range
+        const response = await fetch(
+          `https://pokeapi.co/api/v2/pokemon/${randomId}`
+        );
+        const data = await response.json();
+
+        pokemonImageSrc = data.sprites.front_default;
+        document.getElementById("pokemonImage").src = pokemonImageSrc;
+        document.getElementById("pokemonName").innerText =
+          data.name.charAt(0).toUpperCase() + data.name.slice(1);
+        document.getElementById("pokemonType").innerText =
+          "Type: " + data.types.map((type) => type.type.name).join(", ");
+        document.getElementById("pokemonName").style.textDecoration = "wavy";
+        document.getElementById("pokemonName").style.textDecorationLine =
+          "underline";
+        document.getElementById("pokemonName").style.textDecorationColor =
+          "#fccd04";
+        document.getElementById("pokemonName").style.textDecorationThickness =
+          "3px";
+
+        // Show Pokémon image and hide placeholder
+        document.getElementById("pokemonImage").style.display = "block";
+        document.getElementById("pokemonPlaceholder").style.display = "none";
+
+        // Combine images if both are available
+        combineImages();
+      }
+
+      async function fetchRandomImage() {
+        const randomImageId = Math.floor(Math.random() * 1000); // Random image ID
+        randomImageSrc = `https://picsum.photos/id/${randomImageId}/300/300`;
+        document.getElementById("randomImage").src = randomImageSrc;
+
+        // Show random image and hide placeholder
+        document.getElementById("randomImage").style.display = "block";
+        document.getElementById("imagePlaceholder").style.display = "none";
+
+        // Combine images if both are available
+        combineImages();
+      }
+
+      function downloadCanvasImage() {
+        const canvas = document.getElementById("canvas");
+        const image = canvas.toDataURL("image/png");
+        const link = document.createElement("a");
+        link.href = image;
+        link.download = "you-caught-one.png";
+        link.click();
+      }
+
+      let pokemonImageSrc = "";
+      let randomImageSrc = "";
+
+      let isDragging = false;
+      let startX,
+        startY,
+        pokemonX = 75,
+        pokemonY = 75;
+
+      const sizes = [
+        { width: 100, height: 100 },
+        { width: 150, height: 150 },
+        { width: 200, height: 200 },
+      ];
+      let currentSizeIndex = 1;
+
+      function combineImages() {
+        if (pokemonImageSrc && randomImageSrc) {
+          const canvas = document.getElementById("canvas");
+          const ctx = canvas.getContext("2d");
+
+          // Load random image
+          const randomImg = new Image();
+          randomImg.crossOrigin = "anonymous";
+          randomImg.src = randomImageSrc;
+
+          randomImg.onload = () => {
+            // Load Pokémon image
+            const pokemonImg = new Image();
+            pokemonImg.crossOrigin = "anonymous";
+            pokemonImg.src = pokemonImageSrc;
+
+            pokemonImg.onload = () => {
+              drawCanvas(ctx, randomImg, pokemonImg);
+
+              // Add double-click event listener to toggle size
+              canvas.ondblclick = () => {
+                currentSizeIndex = (currentSizeIndex + 1) % sizes.length;
+                drawCanvas(ctx, randomImg, pokemonImg);
+              };
+
+              // Add mouse event listeners for dragging
+              canvas.onmousedown = (e) => {
+                const { width, height } = sizes[currentSizeIndex];
+                const rect = canvas.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+
+                if (
+                  mouseX >= pokemonX &&
+                  mouseX <= pokemonX + width &&
+                  mouseY >= pokemonY &&
+                  mouseY <= pokemonY + height
+                ) {
+                  isDragging = true;
+                  startX = mouseX - pokemonX;
+                  startY = mouseY - pokemonY;
+                }
+              };
+
+              canvas.onmousemove = (e) => {
+                if (isDragging) {
+                  const rect = canvas.getBoundingClientRect();
+                  pokemonX = e.clientX - rect.left - startX;
+                  pokemonY = e.clientY - rect.top - startY;
+                  drawCanvas(ctx, randomImg, pokemonImg);
+                }
+              };
+
+              canvas.onmouseup = () => {
+                isDragging = false;
+              };
+
+              canvas.onmouseleave = () => {
+                isDragging = false;
+              };
+            };
+          };
+        }
+      }
+
+      function drawCanvas(ctx, randomImg, pokemonImg) {
+        const { width, height } = sizes[currentSizeIndex];
+
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+        // Draw random image as background
+        ctx.drawImage(randomImg, 0, 0, ctx.canvas.width, ctx.canvas.height);
+
+        // Draw Pokémon image on top
+        ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+        ctx.shadowBlur = 10;
+        ctx.shadowOffsetX = 5;
+        ctx.shadowOffsetY = 5;
+        ctx.drawImage(pokemonImg, pokemonX, pokemonY, width, height);
+      }
+    </script>
+  </body>
+</html>
